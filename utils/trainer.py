@@ -92,7 +92,6 @@ def train_epoch_dual_dac(epoch, loader1, loader2, model, loss2, optimizer, sched
         outputs = model(inputs)
 
         loss = F.cross_entropy(outputs, targets)
-        print(loss.detach().cpu().numpy())
         losses.update(loss.item(), inputs.size(0))
 
         # evaluate

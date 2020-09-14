@@ -17,7 +17,7 @@ LSUN | `https://www.yf.io/p/lsun`
 SVHN | `http://ufldl.stanford.edu/housenumbers/`
 Places | `http://places.csail.mit.edu/`
 
-Training with background data further requires ILSVRC'12 and/or Tiny Images:
+Training with background data further requires ILSVRC'12 or Tiny Images:
 
 Dataset | URL
 -- | --
@@ -25,7 +25,8 @@ ILSVRC 2012 | `http://www.image-net.org/challenges/LSVRC/2012/`
 80M Tiny Images | `https://groups.csail.mit.edu/vision/TinyImages/`
 
 
-All datasets must be downloaded and prepared under paths specified in `datasets/__init__.py`. ILSVRC'12 data should be further processed into LMDB format for faster data loading.
+All datasets must be downloaded and prepared under paths specified in `datasets/__init__.py`. **Currently it is hardcoded to sushil's local device. **
+ILSVRC'12 data should be further processed into LMDB format for faster data loading.
 
 ## Instructions
 
@@ -35,22 +36,22 @@ Use `train.py` to pretrain models on the in-distribution datasets. Models are au
 python train.py --gpus 0 -a wrn40 -d cifar10 --epochs 100
 ```
 
-### OOD detection
-Use `test_ood.py` to evaluate OOD detection of trained models on one or more test sets. Example:
+### Important: For Adversarial background resampling
+Use `cv_train_bg_resample.py` to perform adversarial resampling on background dataset. Resampling weights are automatically saved under `checkpoints/` folder. Example:
 ```
-python test_ood.py --gpus 0 -a wrn40 -id cifar10 -od gaussian uniform textures lsun svhn places --out-ratio 0.2 --load-path path/to/model.pth
+python cv_train_bg_resample.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth
 ```
 
 ### Fine-tuning with background data
 Use `train_bg.py` to finetune models using background data. Supports full background dataset, uniformly subsampled background, or resampled background using learned weights. Example:
 ```
-python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od ilsvrc --epochs 50 --load-path path/to/model.pth
-python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od ilsvrc --epochs 50 --load-path path/to/model.pth --resample random -p 0.1
-python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od ilsvrc --epochs 50 --load-path path/to/model.pth --resample path/to/resample/weights.pth -p 0.1
+python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth
+python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth --resample random -p 0.1
+python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth --resample path/to/resample/weights.pth -p 0.1
 ```
 
-### Adversarial background resampling
-Use `train_bg_resample.py` to perform adversarial resampling on background dataset. Resampling weights are automatically saved under `checkpoints/` folder. Example:
+### Evaluation: OOD detection
+Use `test_ood.py` to evaluate OOD detection of trained models on one or more test sets. Example:
 ```
-python train_bg_resample.py --gpus 0 -a wrn40 -id cifar10 -od ilsvrc --epochs 50 --load-path path/to/model.pth
+python test_ood.py --gpus 0 -a wrn40 -id cifar10 -od gaussian uniform textures lsun svhn places --out-ratio 0.2 --load-path path/to/model.pth
 ```

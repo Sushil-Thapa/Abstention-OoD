@@ -46,13 +46,13 @@ def tiny_images(train, transform):
     # print('WARNING: train={} ignored'.format(train))
     # dataset = TinyImages('/path/to/tiny-images/', transform=transform, exclude_cifar=True)
 
-    import tiny_image_data 
+    from .tiny_image_data import TinyImage 
     x = np.load('/home/zeus/data/tiny_images/tiny_images_rand_100k.npy')
     y = 0 * np.ones(x.shape[0],dtype=np.int64) # TODOsu replace 0 in y as n_class
 
     split = True if train else False
 
-    dataset = tiny_image_data.TinyImage(x, y, train=split, transform=transform)
+    dataset = TinyImage(x, y, train=split, transform=transform)
 
     return dataset, None
 
