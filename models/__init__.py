@@ -17,3 +17,8 @@ def wrn28(num_classes):
     from .wide_resnet import Wide_ResNet
     model = Wide_ResNet(depth=28, widen_factor=10, dropout_rate=0.3, num_classes=num_classes)
     return model
+
+def dac(num_classes):
+    from .dac_custom import ConvNet
+    model = ConvNet(num_classes)
+    return model

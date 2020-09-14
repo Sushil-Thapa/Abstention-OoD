@@ -6,6 +6,9 @@ import os
 import sys
 import argparse
 import numpy as np
+'''
+TODO: ood dataset class is 0 from tinyimages.
+'''
 
 import torch
 import torch.nn as nn
@@ -77,7 +80,7 @@ if args.gpus[0] < 0:
 torch.cuda.set_device(args.gpus[0])
 
 # data loading
-normalize = transforms.Normalize(mean=[0.5] * 3, std=[0.25] * 3)
+normalize = transforms.Normalize(mean=[0.5] * 3, std=[0.25] * 3)  # TODOsu update normalization to match?
 if args.in_dataset in ['mnist', 'svhn'] and not args.no_flip:
     print('Horizontal flip disabled for', args.in_dataset)
     args.no_flip = True
@@ -121,6 +124,7 @@ train_out_loader = iter(cycle(train_out_loader))
 val_out_loader = iter(cycle(val_out_loader))
 
 # create model
+n_class = n_class + 1 # Abstention Class
 model = models.__dict__[args.arch](n_class)
 if args.load_path:
     model.load_state_dict(torch.load(args.load_path))
@@ -140,7 +144,7 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, args.lr_step, args.lr_gamma)
 
 optimizer_w = optim.SGD([weight_params], args.lr_w, momentum=0.9)
 
-# uniformity loss // inspired by hardnegative mining
+# uniformity loss
 def weighted_entropy_loss(logits, weights=None, coef=args.coef):
     scores = F.softmax(logits, 1)
     log_scores = F.log_softmax(logits, 1)
@@ -159,8 +163,8 @@ def weighted_entropy_loss(logits, weights=None, coef=args.coef):
 
 # start training
 for epoch in range(1, args.epochs + 1):
-    w = F.softplus(weight_params).detach().cpu() # activation func
-    out_sampler = torch.utils.data.WeightedRandomSampler(w ** .5, len(train_out_dataset), replacement=True) # sampler prep, setup randomweights options, normalized w
+    w = F.softplus(weight_params).detach().cpu()
+    out_sampler = torch.utils.data.WeightedRandomSampler(w ** .5, len(train_out_dataset), replacement=True)
     train_out_loader = DataLoader(train_out_dataset, batch_size=args.batch_size, shuffle=False, sampler=out_sampler, num_workers=args.workers, pin_memory=False, drop_last=True)
     train_out_loader = iter(cycle(train_out_loader))
     

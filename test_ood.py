@@ -57,7 +57,9 @@ def conf_scores(model, loader, progress=False):
         for i, (inputs, targets) in enumerate(loader):
             inputs, targets = inputs.cuda(args.gpus[0]), targets.cuda(args.gpus[0])
             outputs = model(inputs)
-            scores = F.softmax(outputs, 1).max(1)[0]
+            scores = F.softmax(outputs, 1)
+            # scores = scores.max(1)[0] # original
+            scores = 1. - scores[:,-1]  # DAC 
             all_scores.append(scores)
     return torch.cat(all_scores, 0)
 
@@ -88,6 +90,7 @@ in_loader = DataLoader(in_dataset, batch_size=args.batch_size, shuffle=False, nu
 out_num = int(args.out_ratio * len(in_dataset))
 
 # create model
+n_class = n_class + 1 # Abstention class
 model = models.__dict__[args.arch](n_class)
 if args.load_path:
     model.load_state_dict(torch.load(args.load_path, map_location=lambda storage, loc: storage))
@@ -107,8 +110,8 @@ for d in args.out_dataset:
     aurocs = []
     auprs = []
     for _ in range(args.repeat):
-        out_ind = np.random.choice(len(out_dataset), out_num, replace=False)
-        out_dataset_sample = torch.utils.data.Subset(out_dataset, out_ind)
+        out_ind = np.random.choice(len(out_dataset), out_num, replace=False)  # get indexes of out_num randomly permuted data from out_dataset
+        out_dataset_sample = torch.utils.data.Subset(out_dataset, out_ind) # get a subset from specified indices out_ind
         out_loader = DataLoader(out_dataset_sample, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
 
         # compute ood performance

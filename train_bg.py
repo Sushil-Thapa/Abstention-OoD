@@ -16,7 +16,7 @@ from torchvision import transforms
 
 import models
 import datasets
-from utils.trainer import train_epoch_dual, eval_epoch_dual
+from utils.trainer import train_epoch_dual, eval_epoch_dual, train_epoch_dual_dac
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -27,6 +27,8 @@ dset_names = sorted(name for name in datasets.__dict__
     and callable(datasets.__dict__[name]))
 
 sys.path.append('.')
+sys.path.append('/home/zeus/lanl/ood/code/dac-ood/')
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpus', default=[], type=int, nargs='+')
@@ -55,7 +57,7 @@ parser.add_argument('--maxent', action='store_true')
 parser.add_argument('--coef', default=0.5, type=float)
 parser.add_argument('--optimizer', default='SGD', type=str)
 parser.add_argument('--epochs', default=50, type=int)
-parser.add_argument('--lr', default=0.1, type=float)
+parser.add_argument('--lr', default=0.01, type=float)
 parser.add_argument('--lr-step', default=30, type=int)
 parser.add_argument('--lr-gamma', default=0.1, type=float)
 parser.add_argument('--momentum', default=0.9, type=float)
@@ -134,6 +136,7 @@ train_out_loader = iter(cycle(train_out_loader))
 val_out_loader = iter(cycle(val_out_loader))
 
 # create model
+n_class = n_class + 1 # Abstention class
 model = models.__dict__[args.arch](n_class)
 if args.load_path:
     model.load_state_dict(torch.load(args.load_path, map_location=lambda storage, loc: storage))
@@ -156,12 +159,12 @@ def entropy_loss(logits):
     if args.maxent:
         loss = torch.sum(scores * log_scores) / logits.size(0) + np.log(n_class)  # maximize output entropy
     else:
-        loss = torch.mean(-log_scores) - np.log(n_class)  # minimize kl div to uniform
+        loss = torch.mean(-log_scores) - np.log(n_class)  # minimize kl div to uniform across classes
     return args.coef * loss
 
 # start training
 for epoch in range(1, args.epochs + 1):
-    train_epoch_dual(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
+    train_epoch_dual_dac(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
     if epoch % args.test_freq == 0:
         loss, acc = eval_epoch_dual(epoch, val_in_loader, val_out_loader, model, entropy_loss, args)
     if epoch % args.save_freq == 0:

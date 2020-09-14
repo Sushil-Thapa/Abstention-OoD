@@ -1,7 +1,8 @@
 import os
+import numpy as np
 import torch
 from torchvision import datasets
-root_dir = '/path/to/root/'
+root_dir = '~/data/'
 
 class IndexedDataset(torch.utils.data.Dataset):
     def __init__(self, dataset):
@@ -27,29 +28,38 @@ def svhn(train, transform):
     dataset = datasets.SVHN(root_dir, split=split, transform=transform, download=True)
     return dataset, 10
 
-def lsun(train, transform):
-    split = 'train' if train else 'test'
-    dataset = datasets.LSUN(root_dir + 'lsun', classes=split, transform=transform)
-    return dataset, None
+# def lsun(train, transform):
+#     split = 'train' if train else 'test'
+#     dataset = datasets.LSUN(root_dir + 'lsun', classes=split, transform=transform)
+#     return dataset, None
 
-def places(train, transform):
-    dataset = datasets.ImageFolder('/path/to/places/', transform=transform)
-    return dataset, len(dataset.classes)
+# def places(train, transform):
+#     dataset = datasets.ImageFolder('/path/to/places/', transform=transform)
+#     return dataset, len(dataset.classes)
 
-def textures(train, transform):
-    dataset = datasets.ImageFolder('/path/to/dtd/images/', transform=transform)
-    return dataset, len(dataset.classes)
+# def textures(train, transform):
+#     dataset = datasets.ImageFolder('/path/to/dtd/images/', transform=transform)
+#     return dataset, len(dataset.classes)
 
 def tiny_images(train, transform):
-    from .tinyimages import TinyImages
-    print('WARNING: train={} ignored'.format(train))
-    dataset = TinyImages('/path/to/tiny-images/', transform=transform, exclude_cifar=True)
+    # from .tinyimages import TinyImages
+    # print('WARNING: train={} ignored'.format(train))
+    # dataset = TinyImages('/path/to/tiny-images/', transform=transform, exclude_cifar=True)
+
+    import tiny_image_data 
+    x = np.load('/home/zeus/data/tiny_images/tiny_images_rand_100k.npy')
+    y = 0 * np.ones(x.shape[0],dtype=np.int64) # TODOsu replace 0 in y as n_class
+
+    split = True if train else False
+
+    dataset = tiny_image_data.TinyImage(x, y, train=split, transform=transform)
+
     return dataset, None
 
 def tiny_imagenet(train, transform):
     from .tinyimagenet import TinyImageNet
     split = 'train' if train else 'val'
-    dataset = TinyImageNet('/path/to/tiny-imagenet-200/', split=split, transform=transform)
+    dataset = TinyImageNet('/home/zeus/data/tiny-imagenet-200/', split=split, transform=transform)
     return dataset, 200
 
 def ilsvrc(train, transform):

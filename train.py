@@ -56,7 +56,6 @@ parser.add_argument('--print-freq', default=-1, type=int)
 parser.add_argument('--test-freq', default=1, type=int)
 parser.add_argument('--save-freq', default=10, type=int)
 
-
 # get available gpus
 args = parser.parse_args()
 if args.gpus[0] < 0:
@@ -97,6 +96,7 @@ train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=Tru
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
 
 # create model
+n_class = n_class + 1 # Abstention class
 model = models.__dict__[args.arch](n_class)
 if args.load_path:
     model.load_state_dict(torch.load(args.load_path))
