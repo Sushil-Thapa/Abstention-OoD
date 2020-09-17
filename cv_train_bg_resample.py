@@ -67,9 +67,24 @@ parser.add_argument('--print-freq', default=-1, type=int)
 parser.add_argument('--test-freq', default=1, type=int)
 parser.add_argument('--save-freq', default=10, type=int)
 
+# reproducibility
+parser.add_argument('--seed', default = 42, type=int)
+
+args = parser.parse_args()
+
+os.environ['PYTHONHASHSEED']=str(args.seed)
+np.random.seed(args.seed)
+
+torch.manual_seed(args.seed)
+torch.cuda.manual_seed(args.seed)
+
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+
 
 # get available gpus
-args = parser.parse_args()
+
 if args.gpus[0] < 0:
     import GPUtil
     n_gpus = -args.gpus[0] if args.gpus[0] < -1 else 4
@@ -163,8 +178,8 @@ def weighted_entropy_loss(logits, weights=None, coef=args.coef):
 
 # start training
 for epoch in range(1, args.epochs + 1):
-    w = F.softplus(weight_params).detach().cpu()
-    out_sampler = torch.utils.data.WeightedRandomSampler(w ** .5, len(train_out_dataset), replacement=True)
+    w = F.softplus(weight_params).detach().cpu() # activation func
+    out_sampler = torch.utils.data.WeightedRandomSampler(w ** .5, len(train_out_dataset), replacement=True)  # sqrt normalize?
     train_out_loader = DataLoader(train_out_dataset, batch_size=args.batch_size, shuffle=False, sampler=out_sampler, num_workers=args.workers, pin_memory=False, drop_last=True)
     train_out_loader = iter(cycle(train_out_loader))
     
@@ -175,7 +190,7 @@ for epoch in range(1, args.epochs + 1):
         save_name = args.in_dataset + '_' + args.out_dataset + '_' + args.arch + '_resample'
         save_path = os.path.join('checkpoints/', save_name + '_{}ep-{:04d}top{}.pth'.format(epoch, round(acc[0] * 10000), args.topk[0]))
         torch.save(model.module.state_dict(), save_path)
-        w_path = os.path.join('checkpoints/', save_name + '_{}ep-weights.pth'.format(epoch))
+        w_path = os.path.join('checkpoints/', save_name + '_seed{}_{}ep-weights.pth'.format(args.seed, epoch))
         torch.save(weight_params.detach().cpu(), w_path)
 
 for i, k in enumerate(args.topk):

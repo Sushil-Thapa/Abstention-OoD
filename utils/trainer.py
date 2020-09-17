@@ -147,7 +147,7 @@ def train_epoch_dual(epoch, loader1, loader2, model, loss2, optimizer, scheduler
         
         if args.print_freq > 0 and (i + 1) % args.print_freq == 0:
             print('Epoch {}\tIteration {}/{}\tLoss {:.3f}\tPrec {:.2%}@{:d}\t{:.2%}@{:d}'
-                  .format(epoch, i + 1, len(loader), losses.val, acc[0], args.topk[0], acc[1], args.topk[1]))
+                  .format(epoch, i + 1, len(loader1), losses.val, acc[0], args.topk[0], acc[1], args.topk[1]))
 
     if scheduler is not None:
         scheduler.step(epoch)
@@ -215,7 +215,7 @@ def train_epoch_resample(epoch, loader1, loader2, weight_params, model, loss2, o
         loss = loss + loss_ood
 
         losses.update(loss.item(), inputs.size(0))
-        loss_w = -loss_ood
+        loss_w = -loss_ood  # adversarial, maximize loss_w
         
         losses_w.update(loss_w.item(), inputs.size(0))
         

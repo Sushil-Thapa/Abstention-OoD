@@ -7,6 +7,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+seed = 42
+import os
+os.environ['PYTHONHASHSEED']=str(seed)
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
 
 class BasicBlock(nn.Module):
     expansion = 1

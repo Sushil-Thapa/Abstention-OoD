@@ -1,4 +1,8 @@
 .vscode/
-__pycache__
+__pycache__/
 _cache_*
 *.pth
+.data/
+checkpoints/
+*.zip
+*__pycache__*

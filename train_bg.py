@@ -72,6 +72,8 @@ parser.add_argument('--save-freq', default=10, type=int)
 
 # get available gpus
 args = parser.parse_args()
+print(args)
+
 if args.gpus[0] < 0:
     import GPUtil
     n_gpus = -args.gpus[0] if args.gpus[0] < -1 else 4
@@ -164,7 +166,7 @@ def entropy_loss(logits):
 
 # start training
 for epoch in range(1, args.epochs + 1):
-    train_epoch_dual_dac(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
+    train_epoch_dual(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
     if epoch % args.test_freq == 0:
         loss, acc = eval_epoch_dual(epoch, val_in_loader, val_out_loader, model, entropy_loss, args)
     if epoch % args.save_freq == 0:
@@ -174,7 +176,7 @@ for epoch in range(1, args.epochs + 1):
         if args.resample:
             save_name += '_u' if args.resample == 'random' else '_r'
             save_name += '{:d}'.format(round(args.ratio * 100))
-        save_path = os.path.join('checkpoints/', save_name + '_{}ep-{:04d}top{}.pth'.format(epoch, round(acc[0] * 10000), args.topk[0]))
+        save_path = os.path.join('checkpoints/backup1/', save_name + 'adversarialtrained_{}ep-{:04d}top{}.pth'.format(epoch, round(acc[0] * 10000), args.topk[0]))
         torch.save(model.module.state_dict(), save_path)
 
 for i, k in enumerate(args.topk):

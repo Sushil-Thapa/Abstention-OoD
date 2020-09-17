@@ -65,6 +65,7 @@ def conf_scores(model, loader, progress=False):
 
 # get available gpus
 args = parser.parse_args()
+print(args)
 if args.gpus[0] < 0:
     import GPUtil
     n_gpus = -args.gpus[0] if args.gpus[0] < -1 else 4
