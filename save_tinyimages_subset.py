@@ -6,6 +6,11 @@ from datasets.tiny_image_data import TinyImage
 
 parser = argparse.ArgumentParser()
 
+'''scripts
+python save_tinyimages_subset.py -i /home/zeus/data/tiny_images/tiny_images_rand_100k.npy -o tiny_images_rand_100k.npy -r random
+python save_tinyimages_subset.py -i tiny_images_rand_100k.npy -o tiny_images_rand_10k_adversarial_resample.npy -r checkpoints/cifar10_tiny_images_weights.pth
+'''
+
 parser.add_argument('-i','--input-path', type=str, default='/home/zeus/data/tiny_images/tiny_images_rand_100k.npy')
 parser.add_argument('-o','--output-path', type=str, default='tiny_images_rand_10k_adversarialResample.npy')
 parser.add_argument('-p','--ratio', type=str, default=0.1)
