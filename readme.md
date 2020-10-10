@@ -1,4 +1,4 @@
-This repository contains the supplementary Python code for paper **"Background Data Resampling for Outlier-Aware Classification"** to appear at CVPR 2020. 
+This repository contains the supplementary Python code for paper **["A Simple and Effective Baseline for Out-of-Distribution Detection using Abstention"](https://openreview.net/forum?id=q_Q9MMGwSQu)** under review at [ICLR 2021](https://openreview.net/group?id=ICLR.cc/2021/Conference). 
 
 ## Prerequisites
 
@@ -42,7 +42,7 @@ Use `cv_train_bg_resample.py` to perform adversarial resampling on background da
 python cv_train_bg_resample.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth
 ```
 
-### Fine-tuning with background data
+### Fine-tuning with background data using Abstention
 Use `train_bg.py` to finetune models using background data. Supports full background dataset, uniformly subsampled background, or resampled background using learned weights. Example:
 ```
 python train_bg.py --gpus 0 -a wrn40 -id cifar10 -od tiny_images --epochs 50 --load-path path/to/model.pth
