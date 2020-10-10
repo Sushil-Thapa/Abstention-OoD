@@ -4,6 +4,10 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 from .meters import AverageMeter, accuracy
+from .losses import FocalLoss
+
+
+focal_loss = FocalLoss()
 
 def train_epoch(epoch, loader, model, optimizer, scheduler, args):
     model.train()
@@ -71,6 +75,8 @@ def eval_epoch(epoch, loader, model, args):
         print('Val prec@{} {:.2%}'.format(args.topk[j], acc))
     return losses.avg, avg_accs
 
+
+
 def train_epoch_dual_dac(epoch, loader1, loader2, model, loss2, optimizer, scheduler, args):
     model.eval()
 
@@ -92,6 +98,8 @@ def train_epoch_dual_dac(epoch, loader1, loader2, model, loss2, optimizer, sched
         outputs = model(inputs)
 
         loss = F.cross_entropy(outputs, targets)
+        # loss = focal_loss(outputs, targets)
+
         losses.update(loss.item(), inputs.size(0))
 
         # evaluate
@@ -110,6 +118,8 @@ def train_epoch_dual_dac(epoch, loader1, loader2, model, loss2, optimizer, sched
 
     if scheduler is not None:
         scheduler.step(epoch)
+        print(f'Setting lr as: {scheduler.get_lr()}')
+
 
     print('Epoch {:d}\tTrain loss {:.3f}'.format(epoch, losses.avg))
     avg_accs = []
@@ -234,12 +244,14 @@ def train_epoch_resample(epoch, loader1, loader2, weight_params, model, loss2, o
         optimizer.step()
         optimizer_w.step()
 
+
         if args.print_freq > 0 and (i + 1) % args.print_freq == 0:
             print('Epoch {}\tIteration {}/{}\tLoss {:.3f}\tLoss_w {:.3f}\tPrec {:.2%}@{:d}\t{:.2%}@{:d}'
                   .format(epoch, i + 1, len(loader1), losses.val, losses_w.val, acc[0], args.topk[0], acc[1], args.topk[1]))
 
     if scheduler is not None:
         scheduler.step(epoch)
+        print(f'Setting lr as: {scheduler.get_lr()}')
 
     print('w min={:.3f}, avg={:.3f}, max={:.3f}'.format(w.min(), w.mean(), w.max()))
     print('Epoch {:d}\tTrain loss {:.3f}\tloss_w = {:.3f}'.format(epoch, losses.avg, losses_w.avg))

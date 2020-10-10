@@ -25,6 +25,12 @@ from itertools import combinations
 
 import datasets
 
+'''
+python eval_iou_resample.py --resample checkpoints/backup1/iou --ratio 0.1  # iou has all the subset indices file.
+python eval_iou_resample.py --resample random --ratio 0.1 
+'''
+
+
 dset_names = sorted(name for name in datasets.__dict__
     if name.islower() and not name.startswith("__")
     and callable(datasets.__dict__[name]))
@@ -51,6 +57,8 @@ parser.add_argument('-r', '--repeat', default=5, type=int)
 args = parser.parse_args()
 print(args)
 
+
+
 # data loading
 normalize = transforms.Normalize(mean=[0.5] * 3, std=[0.25] * 3)
 flip_prob = 0.5
@@ -67,8 +75,11 @@ train_transform = transforms.Compose([
 train_out_dataset, _ = datasets.__dict__[args.out_dataset](train=True, transform=train_transform)
 full_train_out_dataset = copy.deepcopy(train_out_dataset)
 
-keep_idxs = []
 
+
+
+# Get the list of indices from 5 different samplers. 
+keep_idxs = []
 if args.resample:
     print(args.resample)
     if args.resample == 'random':
@@ -76,33 +87,48 @@ if args.resample:
             w = torch.rand(len(train_out_dataset))
             w_thresh = torch.kthvalue(w, int((1 - args.ratio) * len(w)))[0]
             keep_idx = [c.item() for c in (w >= w_thresh).nonzero()]
+            print('number of samles',len(keep_idx))
             keep_idxs.append(keep_idx)
+
     else:
         import glob
         models = glob.glob(f"{args.resample}/*.pth")
-        print(models)
+        print('\n',models)
             
         # import pdb; pdb.set_trace()
 
         for model in models:
+            
             w = torch.load(model, map_location=lambda storage, loc: storage).detach()
             p = F.softplus(w)
             p = args.ratio * p / p.mean()
             keep_idx = [c.item() for c in (p >= torch.rand(len(w))).nonzero()]
             keep_idxs.append(keep_idx)
+            # import pdb; pdb.set_trace()
+    
+else:
+    # test cases
+    keep_idxs = [
+        [_ for _ in range(0,25)],
+        [_ for _ in range(5,30)],
+        [_ for _ in range(10,35)],
+        [_ for _ in range(15,40)],
+        [_ for _ in range(20,45)]
+    ]
+
             
 
     # print('Use OOD examples: {}/{} ({:.2%})'.format(len(keep_idx), len(train_out_dataset), len(keep_idx) / len(train_out_dataset)))
     # train_out_dataset = Subset(train_out_dataset, keep_idx)
 
-
-repeat = args.repeat
-
+import pdb; pdb.set_trace()
+repeat = len(keep_idxs)
 idx_ngrams = []
 for i in range(repeat):
     if i > 0:
-        idx_ngrams.append(list(combinations(range(repeat), i+1)))
-print(idx_ngrams)
+        ng = list(combinations(range(repeat), i+1)) # combinations of indices of at least 2 samplers.
+        idx_ngrams.append(ng)
+        print('\n\nng:',ng)
 
     
 
@@ -117,18 +143,18 @@ print(idx_ngrams)
 
 ngram_indices = []
 n_scores = {}
+#calculate the iou for each tuple of samplers and calculate the mean for equal length tuple
 for idx_ngram in idx_ngrams: 
-    # [(1,2), (2,3)]
     n = len(idx_ngram[0])
-    # print('idx_ngram',n, idx_ngram)
+    print('n',n)
 
-    x = []  # mean, std
+    x = []  
     for ngram in idx_ngram: 
-        # (1,2)
         # print('ngram',ngram)
         ngram = [keep_idxs[i] for i in ngram]
         intersection = reduce(np.intersect1d, ngram)
         union = reduce(np.union1d, ngram)
+        print('intersection',len(intersection),len(union))
 
         iou = len(intersection) / len(union) * 100
         # print(n, iou*100)
@@ -142,15 +168,16 @@ for idx_ngram in idx_ngrams:
         'mean IOU %': round(np.array(x).mean(),4),
         'std%': round(np.array(x).std(),4),
         'n-gram':n,
-        'IOU':[round(i,4) for i in x]
+        # 'IOU':[round(i,4) for i in x]
     }
     # print({n:x})
 
     
 
-# print(n_scores)
+print(n_scores)
 import seaborn as sns
 df = pd.DataFrame.from_dict(n_scores, orient='index')
+print(df)
 
 fig = plt.figure()
 plt.errorbar(df['n-gram'], df['mean IOU %'], df["std%"],fmt='-o')
@@ -168,7 +195,6 @@ plt.show()
 # sns_plot.figure.savefig(f"assets/{args.resample}.png")
 # import pdb; pdb.set_trace()
 
-print('')
 # ngram_indices.append([[[keep_idxs[i], keep_idxs[j]] for i in ngram for j in i])
 
 # ijk according to len

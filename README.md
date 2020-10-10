@@ -1,4 +1,4 @@
-This repository contains the supplementary Python code for paper **["A Simple and Effective Baseline for Out-of-Distribution Detection using Abstention"](https://openreview.net/forum?id=q_Q9MMGwSQu)** under review at [ICLR 2021](https://openreview.net/group?id=ICLR.cc/2021/Conference). 
+This repository contains the part of supplementary Python code for [our paper](http://www.omitted.link/) under review at a conference X 2021. 
 
 ## Prerequisites
 
@@ -55,3 +55,6 @@ Use `test_ood.py` to evaluate OOD detection of trained models on one or more tes
 ```
 python test_ood.py --gpus 0 -a wrn40 -id cifar10 -od gaussian uniform textures lsun svhn places --out-ratio 0.2 --load-path path/to/model.pth
 ```
+
+## References
+1. [Background Data Resampling for Outlier-Aware Classification, Li, Yi and Vasconcelos, Nuno, CVPR 2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Li_Background_Data_Resampling_for_Outlier-Aware_Classification_CVPR_2020_paper.html)

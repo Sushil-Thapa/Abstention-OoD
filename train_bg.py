@@ -6,6 +6,7 @@ import os
 import sys
 import argparse
 import numpy as np
+import math
 
 import torch
 import torch.nn as nn
@@ -43,7 +44,7 @@ parser.add_argument('-od', '--out-dataset', default='ilsvrc', choices=dset_names
 parser.add_argument('--scale', default=32, type=int)
 parser.add_argument('--crop', default=32, type=int)
 parser.add_argument('--no-flip', action='store_true')
-parser.add_argument('-b', '--batch-size', default=128, type=int)
+parser.add_argument('-b', '--batch-size', default=64, type=int)
 parser.add_argument('-j', '--workers', default=8, type=int)
 
 # resampling
@@ -73,6 +74,7 @@ parser.add_argument('--save-freq', default=10, type=int)
 # get available gpus
 args = parser.parse_args()
 print(args)
+import pdb; pdb.set_trace()
 
 if args.gpus[0] < 0:
     import GPUtil
@@ -124,10 +126,12 @@ if args.resample:
     print('Use OOD examples: {}/{} ({:.2%})'.format(len(keep_idx), len(train_out_dataset), len(keep_idx) / len(train_out_dataset)))
     train_out_dataset = Subset(train_out_dataset, keep_idx)
 
+
+ood_batchsize = math.ceil(args.batch_size/n_class)
 train_in_loader = DataLoader(train_in_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=False, drop_last=True)
-train_out_loader = DataLoader(train_out_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=False, drop_last=True)
+train_out_loader = DataLoader(train_out_dataset, batch_size=ood_batchsize, shuffle=True, num_workers=args.workers, pin_memory=False, drop_last=True)
 val_in_loader = DataLoader(val_in_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False)
-val_out_loader = DataLoader(val_out_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False)
+val_out_loader = DataLoader(val_out_dataset, batch_size=ood_batchsize, shuffle=False, num_workers=args.workers, pin_memory=False)
 
 def cycle(iterable):
     while True:
@@ -166,7 +170,7 @@ def entropy_loss(logits):
 
 # start training
 for epoch in range(1, args.epochs + 1):
-    train_epoch_dual(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
+    train_epoch_dual_dac(epoch, train_in_loader, train_out_loader, model, entropy_loss, optimizer, scheduler, args)
     if epoch % args.test_freq == 0:
         loss, acc = eval_epoch_dual(epoch, val_in_loader, val_out_loader, model, entropy_loss, args)
     if epoch % args.save_freq == 0:
@@ -176,7 +180,7 @@ for epoch in range(1, args.epochs + 1):
         if args.resample:
             save_name += '_u' if args.resample == 'random' else '_r'
             save_name += '{:d}'.format(round(args.ratio * 100))
-        save_path = os.path.join('checkpoints/backup1/', save_name + 'adversarialtrained_{}ep-{:04d}top{}.pth'.format(epoch, round(acc[0] * 10000), args.topk[0]))
+        save_path = os.path.join('checkpoints/backup1/', save_name + 'dividedBatchsize_{}ep-{:04d}top{}.pth'.format(epoch, round(acc[0] * 10000), args.topk[0]))
         torch.save(model.module.state_dict(), save_path)
 
 for i, k in enumerate(args.topk):

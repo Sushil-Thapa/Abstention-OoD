@@ -37,4 +37,5 @@ np.save(args.output_path, subset)
 
 _subset = np.load(args.output_path)
 print(x.shape, subset.shape, _subset.shape)
+
 np.testing.assert_array_equal(subset, _subset)

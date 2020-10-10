@@ -48,6 +48,9 @@ parser.add_argument('-j', '--workers', default=4, type=int)
 parser.add_argument('--repeat', default=5, type=int)
 parser.add_argument('--out-ratio', default=0.2, type=float)
 
+parser.add_argument('-dac',"--dac", action="store_true")
+
+
 def conf_scores(model, loader, progress=False):
     model.eval()
     all_scores = []
@@ -58,8 +61,11 @@ def conf_scores(model, loader, progress=False):
             inputs, targets = inputs.cuda(args.gpus[0]), targets.cuda(args.gpus[0])
             outputs = model(inputs)
             scores = F.softmax(outputs, 1)
-            # scores = scores.max(1)[0] # original
-            scores = 1. - scores[:,-1]  # DAC 
+            if args.dac:
+                scores = 1. - scores[:,-1]  # DAC 
+            else:
+                scores = scores.max(1)[0] # original
+            
             all_scores.append(scores)
     return torch.cat(all_scores, 0)
 
