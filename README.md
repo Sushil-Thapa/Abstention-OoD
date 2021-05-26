@@ -1,5 +1,7 @@
 This repository contains the part of supplementary Python code for [our paper](http://www.omitted.link/) under review at a conference X 2021. 
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/an-effective-baseline-for-robustness-to/out-of-distribution-detection-on-cifar-10)](https://paperswithcode.com/sota/out-of-distribution-detection-on-cifar-10?p=an-effective-baseline-for-robustness-to)
+
 ## Prerequisites
 
 ### Environment
