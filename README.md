@@ -59,4 +59,4 @@ python test_ood.py --gpus 0 -a wrn40 -id cifar10 -od gaussian uniform textures l
 ```
 
 ## References
-1. [Background Data Resampling for Outlier-Aware Classification, Li, Yi and Vasconcelos, Nuno, CVPR 2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Li_Background_Data_Resampling_for_Outlier-Aware_Classification_CVPR_2020_paper.html)
+1. [Background Data Resampling for Outlier-Aware Classification, Li, Yi and Vasconcelos, Nuno, CVPR 2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Li_Background_Data_Resampling_for_Outlier-Aware_Classification_CVPR_2020_paper.html) | [code](https://github.com/JerryYLi/bg-resample-ood)
