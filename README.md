@@ -1,5 +1,6 @@
-This repository contains the part of supplementary Python code for [our paper](http://www.omitted.link/) under review at a conference X 2021. 
+This repository contains the part of supplementary Python code for our paper[(preprint link)](https://arxiv.org/abs/2105.07107) on robustness and distribution shift. 
 
+This method was able to achieve state-of-the-art performance on various Vision and Language Out-of-distribution detection tasks.
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/an-effective-baseline-for-robustness-to/out-of-distribution-detection-on-cifar-10)](https://paperswithcode.com/sota/out-of-distribution-detection-on-cifar-10?p=an-effective-baseline-for-robustness-to)
 
 ## Prerequisites
